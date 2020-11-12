@@ -1,7 +1,16 @@
 /// <reference types="Cypress" />
 
 describe("workshop test", () => {
-  it("asserts on the DOM after commands", () => {
+  it("asserts on DOM and network requests", () => {
+    // Setup our routes
+    cy.server();
+    cy.route("POST", "https://conduit.productionready.io/api/users/login").as(
+      "login"
+    );
+    cy.route("POST", "https://conduit.productionready.io/api/articles/").as(
+      "publish"
+    );
+
     // Visits our application
 
     // -- Visits the baseUrl
@@ -16,7 +25,7 @@ describe("workshop test", () => {
     cy.get(":nth-child(2) > .form-control").type(
       "ngconfentcypress@testemail.com"
     );
-    // -- BONUS: Asserts the email address updated in the DOM
+    // -- Asserts the email address updated in the DOM
     cy.get(":nth-child(2) > .form-control").should(
       "have.value",
       "ngconfentcypress@testemail.com"
@@ -25,7 +34,7 @@ describe("workshop test", () => {
     // -- Inputs password
     cy.get(":nth-child(3) > .form-control").type("ngConfEntCypress");
 
-    // -- BONUS: Asserts password updated in the DOM
+    // -- Asserts password updated in the DOM
     cy.get(":nth-child(3) > .form-control").should(
       "have.value",
       "ngConfEntCypress"
@@ -33,6 +42,9 @@ describe("workshop test", () => {
 
     // -- Clicks button to sign in
     cy.get(".btn").should("not.be", "disabled").click();
+
+    // -- Asserts the network request status was valid
+    cy.wait("@login").its("status").should("equal", 200);
 
     // -- Asserts DOM changed on sign in
     cy.get(":nth-child(4) > .nav-link").should(
@@ -56,6 +68,9 @@ describe("workshop test", () => {
     );
     cy.get(":nth-child(4) > .form-control").type("tutorial");
     cy.get(".btn").should("not.be", "disabled").click();
+
+    // Asserts network request status was valid
+    cy.wait("@publish").its("status").should("equal", 200);
 
     // -- Asserts DOM changed on click
     cy.contains("Edit Article");
